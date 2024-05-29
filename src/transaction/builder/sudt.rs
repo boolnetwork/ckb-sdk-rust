@@ -138,7 +138,9 @@ impl CkbTransactionBuilder for SudtTransactionBuilder {
             let outputs_sudt_amount: u128 = tx
                 .outputs_data
                 .iter()
-                .map(|data| parse_u128(data.as_slice()))
+                .map(|data| {
+                    parse_u128(<ckb_types::packed::Bytes as ckb_types::prelude::Unpack<Vec<u8>>>::unpack(data).as_slice())
+                })
                 .collect::<Result<Vec<u128>, TxBuilderError>>()
                 .map(|u128_vec| u128_vec.iter().sum())?;
 

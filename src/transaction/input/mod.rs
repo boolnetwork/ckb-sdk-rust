@@ -87,8 +87,18 @@ impl InputIterator {
                     query.secondary_script_len_range = Some(ValueRangeOption::new_exact(0));
                     query.data_len_range = Some(ValueRangeOption::new_exact(0));
                 };
-                let (live_cells, _capacity) =
+                let (mut live_cells, _capacity) =
                     self.cell_collector.collect_live_cells(&query, true)?;
+                if live_cells.is_empty() {
+                    if let None = &self.type_script {
+                        query.with_data = Some(true);
+                        query.secondary_script = None;
+                        query.data_len_range = Some(ValueRangeOption::new_min(32));
+                        let (mut live_cells_extra, _capacity) =
+                            self.cell_collector.collect_live_cells(&query, true)?;
+                        live_cells.append(&mut live_cells_extra);
+                    };
+                }
                 if live_cells.is_empty() {
                     self.lock_scripts.pop();
                 } else {
